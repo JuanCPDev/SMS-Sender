@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'main.dart';
 import 'message.dart';
 
@@ -17,45 +16,48 @@ List<DropdownMenuItem<int>> get dropdownItems {
 
 Future<void> sendSMS(BuildContext context) async {
   String toNum = await displayStringInputDialog(context, "To");
+  List<String> numList=[]; 
+  numList= toNum.split(",");
 
-  int selectedValue = 0;
-  await showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: Text("Message List"),
-        content: Container(
-            child: DropdownButton(
-                value: selectedValue,
-                onChanged: (selection) {
-                  selectedValue = selection as int;
+  if (toNum != '') {
+    int selectedValue = 0;
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Message List"),
+          content: Container(
+              child: DropdownButton(
+                  value: selectedValue,
+                  onChanged: (selection) {
+                    selectedValue = selection as int;
+                  },
+                  items: dropdownItems)),
+          actions: [
+            TextButton(
+                onPressed: () {
+                  for (String num in numList)
+                  twilioFlutter.sendSMS(
+                      toNumber: "+1" + num,
+                      messageBody: messageList[selectedValue].body.toString());
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(messageList[selectedValue].title.toString() +
+                        " message sent to " +
+                        toNum),
+                  ));
+                  Navigator.pop(context);
                 },
-                items: dropdownItems)),
-        actions: [
-          TextButton(
-              onPressed: () {
-                twilioFlutter.sendSMS(
-                    toNumber: "+1" + toNum,
-                    messageBody: messageList[selectedValue].body.toString());
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(messageList[selectedValue].title.toString() +
-                      " message sent to " +
-                      toNum),
-                ));
-                Navigator.pop(context);
-              },
-              child: Text("Send")),
-          TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text("Cancel"))
-        ],
-      );
-    },
-  );
-
-  //twilioFlutter.sendSMS(toNumber: toNum, messageBody: messageList[selectedValue].body.toString());
+                child: Text("Send")),
+            TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text("Cancel"))
+          ],
+        );
+      },
+    );
+  }
 }
 
 void addMessage(String title, String body) {
